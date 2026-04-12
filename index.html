@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="新町時刻表" />
+  <meta name="theme-color" content="#0a2240" />
+  <title>新町 ⇔ 上野・東京 時刻表</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0b0f1a; }
+    /* スクロールバー非表示（iOS/Android） */
+    ::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+
+  <script type="text/babel">
+const { useState, useEffect } = React;
+
+const UP_WEEKDAY = [
+  { dep: "05:20", via: "東京経由" },
+  { dep: "05:31", via: "東京経由" },
+  { dep: "05:49", via: "東京経由" },
+  { dep: "06:18", via: "東京経由" },
+  { dep: "06:32", via: "東京経由" },
+  { dep: "06:42", via: "東京経由" },
+  { dep: "06:54", via: "東京経由" },
+  { dep: "06:59", via: "東京経由" },
+  { dep: "07:10", via: "上野止" },
+  { dep: "07:23", via: "東京経由" },
+  { dep: "07:29", via: "東京経由" },
+  { dep: "07:55", via: "東京経由" },
+  { dep: "08:35", via: "東京経由" },
+  { dep: "08:59", via: "東京経由" },
+  { dep: "09:40", via: "東京経由" },
+  { dep: "10:05", via: "東京経由" },
+  { dep: "10:37", via: "東京経由" },
+  { dep: "11:04", via: "東京経由" },
+  { dep: "11:42", via: "東京経由" },
+  { dep: "12:03", via: "東京経由" },
+  { dep: "12:42", via: "東京経由" },
+  { dep: "13:03", via: "東京経由" },
+  { dep: "13:39", via: "東京経由" },
+  { dep: "14:00", via: "東京経由" },
+  { dep: "14:39", via: "東京経由" },
+  { dep: "15:03", via: "東京経由" },
+  { dep: "15:41", via: "上野止" },
+  { dep: "16:06", via: "東京経由" },
+  { dep: "16:37", via: "東京経由" },
+  { dep: "16:51", via: "東京経由" },
+  { dep: "17:10", via: "東京経由" },
+  { dep: "17:47", via: "上野止" },
+  { dep: "18:10", via: "東京経由" },
+  { dep: "18:41", via: "東京経由" },
+  { dep: "18:57", via: "東京経由" },
+  { dep: "19:19", via: "東京経由" },
+  { dep: "19:40", via: "上野止" },
+  { dep: "19:56", via: "東京経由" },
+  { dep: "20:18", via: "東京経由" },
+  { dep: "20:41", via: "上野止" },
+  { dep: "20:59", via: "東京経由" },
+  { dep: "21:40", via: "上野止" },
+  { dep: "21:56", via: "上野止" },
+  { dep: "22:25", via: "上野止" },
+  { dep: "22:44", via: "上野止" },
+];
+
+const UP_HOLIDAY = [
+  { dep: "05:20", via: "東京経由" },
+  { dep: "05:34", via: "東京経由" },
+  { dep: "05:47", via: "東京経由" },
+  { dep: "06:00", via: "東京経由" },
+  { dep: "06:07", via: "東京経由" },
+  { dep: "06:33", via: "東京経由" },
+  { dep: "06:59", via: "東京経由" },
+  { dep: "07:10", via: "東京経由" },
+  { dep: "07:28", via: "東京経由" },
+  { dep: "07:37", via: "東京経由" },
+  { dep: "07:59", via: "東京経由" },
+  { dep: "08:35", via: "東京経由" },
+  { dep: "08:59", via: "東京経由" },
+  { dep: "09:16", via: "東京経由" },
+  { dep: "09:40", via: "東京経由" },
+  { dep: "10:05", via: "東京経由" },
+  { dep: "10:37", via: "東京経由" },
+  { dep: "11:04", via: "東京経由" },
+  { dep: "11:42", via: "東京経由" },
+  { dep: "12:03", via: "東京経由" },
+  { dep: "12:42", via: "東京経由" },
+  { dep: "13:03", via: "東京経由" },
+  { dep: "13:39", via: "東京経由" },
+  { dep: "14:00", via: "東京経由" },
+  { dep: "14:39", via: "東京経由" },
+  { dep: "15:03", via: "東京経由" },
+  { dep: "15:47", via: "東京経由" },
+  { dep: "16:06", via: "東京経由" },
+  { dep: "16:38", via: "東京経由" },
+  { dep: "16:51", via: "東京経由" },
+  { dep: "17:10", via: "東京経由" },
+  { dep: "17:43", via: "上野止" },
+  { dep: "17:57", via: "東京経由" },
+  { dep: "18:10", via: "東京経由" },
+  { dep: "18:40", via: "東京経由" },
+  { dep: "18:57", via: "東京経由" },
+  { dep: "19:17", via: "東京経由" },
+  { dep: "19:40", via: "上野止" },
+  { dep: "19:57", via: "東京経由" },
+  { dep: "20:18", via: "東京経由" },
+  { dep: "20:47", via: "東京経由" },
+  { dep: "20:59", via: "東京経由" },
+  { dep: "21:41", via: "上野止" },
+  { dep: "21:56", via: "上野止" },
+  { dep: "22:25", via: "上野止" },
+  { dep: "22:44", via: "上野止" },
+];
+
+const DOWN_WEEKDAY = [
+  { tokyo: null, ueno: "05:13", type: "普通", arr: "06:45", origin: true },
+  { tokyo: null, ueno: "05:43", type: "普通", arr: "07:18", origin: true },
+  { tokyo: "05:54", ueno: "06:00", type: "普通", arr: "07:39", origin: false },
+  { tokyo: null, ueno: "06:12", type: "普通", arr: "07:51", origin: true },
+  { tokyo: "06:20", ueno: "06:26", type: "普通", arr: "08:05", origin: false },
+  { tokyo: null, ueno: "06:40", type: "普通", arr: "08:20", origin: true },
+  { tokyo: "07:18", ueno: "07:24", type: "普通", arr: "09:00", origin: false },
+  { tokyo: null, ueno: "07:31", type: "普通", arr: "09:09", origin: true },
+  { tokyo: "07:43", ueno: "07:49", type: "普通", arr: "09:29", origin: false },
+  { tokyo: "08:26", ueno: "08:32", type: "快速アーバン", arr: "10:02", origin: false },
+  { tokyo: "08:36", ueno: "08:42", type: "普通", arr: "10:22", origin: false },
+  { tokyo: "09:22", ueno: "09:28", type: "快速アーバン", arr: "10:54", origin: false },
+  { tokyo: "09:39", ueno: "09:45", type: "普通", arr: "11:22", origin: false },
+  { tokyo: "09:50", ueno: "09:56", type: "普通", arr: "11:38", origin: false },
+  { tokyo: "10:09", ueno: "10:15", type: "普通", arr: "12:00", origin: false },
+  { tokyo: "10:39", ueno: "10:45", type: "普通", arr: "12:31", origin: false },
+  { tokyo: "11:19", ueno: "11:25", type: "普通", arr: "13:09", origin: false },
+  { tokyo: "11:39", ueno: "11:45", type: "普通", arr: "13:31", origin: false },
+  { tokyo: "12:21", ueno: "12:27", type: "普通", arr: "14:07", origin: false },
+  { tokyo: "12:39", ueno: "12:45", type: "普通", arr: "14:30", origin: false },
+  { tokyo: "13:21", ueno: "13:27", type: "普通", arr: "15:08", origin: false },
+  { tokyo: "13:39", ueno: "13:45", type: "普通", arr: "15:31", origin: false },
+  { tokyo: "14:21", ueno: "14:27", type: "普通", arr: "16:08", origin: false },
+  { tokyo: "14:39", ueno: "14:45", type: "普通", arr: "16:31", origin: false },
+  { tokyo: "15:19", ueno: "15:25", type: "普通", arr: "17:08", origin: false },
+  { tokyo: "15:39", ueno: "15:45", type: "普通", arr: "17:21", origin: false },
+  { tokyo: "15:59", ueno: "16:05", type: "普通", arr: "17:41", origin: false },
+  { tokyo: null, ueno: "16:32", type: "普通", arr: "18:09", origin: true },
+  { tokyo: "16:39", ueno: "16:45", type: "普通", arr: "18:22", origin: false },
+  { tokyo: "16:59", ueno: "17:05", type: "普通", arr: "18:42", origin: false },
+  { tokyo: null, ueno: "17:31", type: "普通", arr: "19:14", origin: true },
+  { tokyo: "17:38", ueno: "17:44", type: "普通", arr: "19:27", origin: false },
+  { tokyo: null, ueno: "18:04", type: "普通", arr: "19:43", origin: true },
+  { tokyo: "18:03", ueno: "18:09", type: "普通", arr: "19:55", origin: false },
+  { tokyo: "18:32", ueno: "18:38", type: "普通", arr: "20:34", origin: false },
+  { tokyo: "18:36", ueno: "18:42", type: "快速アーバン", arr: "20:12", origin: false },
+  { tokyo: null, ueno: "19:09", type: "普通", arr: "20:49", origin: true },
+  { tokyo: "19:08", ueno: "19:14", type: "普通", arr: "20:55", origin: false },
+  { tokyo: "19:28", ueno: "19:34", type: "普通", arr: "21:24", origin: false },
+  { tokyo: "19:35", ueno: "19:41", type: "快速アーバン", arr: "21:10", origin: false },
+  { tokyo: "20:18", ueno: "20:24", type: "普通", arr: "22:00", origin: false },
+  { tokyo: null, ueno: "20:33", type: "普通", arr: "22:11", origin: true },
+  { tokyo: "20:38", ueno: "20:44", type: "普通", arr: "22:27", origin: false },
+  { tokyo: "21:20", ueno: "21:26", type: "普通", arr: "23:02", origin: false },
+  { tokyo: "21:38", ueno: "21:44", type: "普通", arr: "23:23", origin: false },
+  { tokyo: "22:13", ueno: "22:19", type: "普通", arr: "23:54", origin: false },
+  { tokyo: "23:19", ueno: "23:25", type: "普通", arr: "翌1:02", origin: false },
+];
+
+const DOWN_HOLIDAY = [
+  { tokyo: null, ueno: "05:13", type: "普通", arr: "06:45", origin: true },
+  { tokyo: null, ueno: "05:43", type: "普通", arr: "07:18", origin: true },
+  { tokyo: "05:54", ueno: "06:00", type: "普通", arr: "07:39", origin: false },
+  { tokyo: null, ueno: "06:15", type: "普通", arr: "07:51", origin: true },
+  { tokyo: "06:20", ueno: "06:26", type: "普通", arr: "08:05", origin: false },
+  { tokyo: null, ueno: "06:40", type: "普通", arr: "08:20", origin: true },
+  { tokyo: "07:18", ueno: "07:24", type: "普通", arr: "09:07", origin: false },
+  { tokyo: "07:51", ueno: "07:57", type: "普通", arr: "09:33", origin: false },
+  { tokyo: "08:29", ueno: "08:35", type: "快速アーバン", arr: "10:05", origin: false },
+  { tokyo: "08:39", ueno: "08:45", type: "普通", arr: "10:21", origin: false },
+  { tokyo: "08:58", ueno: "09:04", type: "普通", arr: "10:46", origin: false },
+  { tokyo: "09:24", ueno: "09:30", type: "快速アーバン", arr: "11:03", origin: false },
+  { tokyo: "09:38", ueno: "09:44", type: "普通", arr: "11:30", origin: false },
+  { tokyo: "10:08", ueno: "10:14", type: "普通", arr: "11:58", origin: false },
+  { tokyo: "10:39", ueno: "10:45", type: "普通", arr: "12:31", origin: false },
+  { tokyo: "11:19", ueno: "11:25", type: "普通", arr: "13:09", origin: false },
+  { tokyo: "11:39", ueno: "11:45", type: "普通", arr: "13:31", origin: false },
+  { tokyo: "12:21", ueno: "12:27", type: "普通", arr: "14:07", origin: false },
+  { tokyo: "12:39", ueno: "12:45", type: "普通", arr: "14:30", origin: false },
+  { tokyo: "13:21", ueno: "13:27", type: "普通", arr: "15:08", origin: false },
+  { tokyo: "13:39", ueno: "13:45", type: "普通", arr: "15:31", origin: false },
+  { tokyo: "14:21", ueno: "14:27", type: "普通", arr: "16:08", origin: false },
+  { tokyo: "14:39", ueno: "14:45", type: "普通", arr: "16:31", origin: false },
+  { tokyo: "15:21", ueno: "15:27", type: "普通", arr: "17:08", origin: false },
+  { tokyo: "15:39", ueno: "15:45", type: "普通", arr: "17:21", origin: false },
+  { tokyo: "15:59", ueno: "16:05", type: "普通", arr: "17:43", origin: false },
+  { tokyo: null, ueno: "16:32", type: "普通", arr: "18:09", origin: true },
+  { tokyo: "16:39", ueno: "16:45", type: "普通", arr: "18:22", origin: false },
+  { tokyo: "16:59", ueno: "17:05", type: "普通", arr: "18:41", origin: false },
+  { tokyo: null, ueno: "17:31", type: "普通", arr: "19:14", origin: true },
+  { tokyo: "17:36", ueno: "17:42", type: "普通", arr: "19:20", origin: false },
+  { tokyo: null, ueno: "17:46", type: "普通", arr: "19:33", origin: true },
+  { tokyo: null, ueno: "18:10", type: "普通", arr: "19:55", origin: true },
+  { tokyo: null, ueno: "18:22", type: "快速アーバン", arr: "19:48", origin: true },
+  { tokyo: "18:31", ueno: "18:37", type: "普通", arr: "20:16", origin: false },
+  { tokyo: "18:46", ueno: "18:52", type: "普通", arr: "20:33", origin: false },
+  { tokyo: "19:09", ueno: "19:15", type: "普通", arr: "21:02", origin: false },
+  { tokyo: null, ueno: "19:23", type: "快速アーバン", arr: "20:49", origin: true },
+  { tokyo: "19:40", ueno: "19:46", type: "普通", arr: "21:39", origin: false },
+  { tokyo: null, ueno: "20:18", type: "普通", arr: "21:53", origin: true },
+  { tokyo: "20:16", ueno: "20:22", type: "普通", arr: "22:05", origin: false },
+  { tokyo: "21:00", ueno: "21:06", type: "普通", arr: "22:41", origin: false },
+  { tokyo: "21:59", ueno: "22:05", type: "普通", arr: "23:42", origin: false },
+  { tokyo: "22:09", ueno: "22:15", type: "普通", arr: "23:54", origin: false },
+  { tokyo: "22:31", ueno: "22:37", type: "普通", arr: "翌0:19", origin: false },
+  { tokyo: "23:19", ueno: "23:25", type: "普通", arr: "翌1:02", origin: false },
+];
+
+function toMin(t) {
+  if (!t || t.startsWith("翌")) return Infinity;
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + m;
+}
+function addMin(t, n) {
+  if (!t || t.startsWith("翌")) return t;
+  const [h, m] = t.split(":").map(Number);
+  const tot = h * 60 + m + n;
+  const nh = Math.floor(tot / 60), nm = tot % 60;
+  const pad = v => String(v).padStart(2, "0");
+  return nh >= 24 ? `翌${pad(nh - 24)}:${pad(nm)}` : `${pad(nh)}:${pad(nm)}`;
+}
+function travelMin(dep) {
+  const m = toMin(dep);
+  if (m < 7 * 60) return 95;
+  if (m < 9 * 60) return 99;
+  if (m < 17 * 60) return 100;
+  return 97;
+}
+function nowMin() {
+  const d = new Date();
+  return d.getHours() * 60 + d.getMinutes();
+}
+function nextIdx(data, key) {
+  const now = nowMin();
+  for (let i = 0; i < data.length; i++) if (toMin(key(data[i])) >= now) return i;
+  return -1;
+}
+
+const mono = "'Courier New', monospace";
+const sans = "'Hiragino Sans', 'Noto Sans JP', sans-serif";
+
+function thSt() {
+  return {
+    background: "#0e1f33", color: "#6a94b8", fontWeight: 500,
+    padding: "9px 12px", textAlign: "center", fontSize: 11,
+    letterSpacing: "0.08em", borderBottom: "2px solid #1a3a55",
+    whiteSpace: "nowrap", position: "sticky", top: 0, zIndex: 5,
+  };
+}
+function rowSt(past, next) {
+  return {
+    background: next ? "rgba(255,200,50,0.11)" : past ? "rgba(255,255,255,0.02)" : "transparent",
+    borderBottom: "1px solid rgba(255,255,255,0.04)",
+  };
+}
+function timeSt(past, next, dim) {
+  return {
+    padding: "9px 12px", fontFamily: mono, fontVariantNumeric: "tabular-nums",
+    fontWeight: next && !dim ? 700 : 400, fontSize: dim ? 13 : 15,
+    color: past ? "#2d4155" : next ? (dim ? "rgba(255,216,77,0.65)" : "#ffd84d") : (dim ? "rgba(200,216,232,0.45)" : "#e8f4ff"),
+    textAlign: "center", whiteSpace: "nowrap",
+  };
+}
+function tdSt(past) {
+  return { padding: "9px 12px", color: past ? "#2d4155" : "#c8d8e8", textAlign: "center", whiteSpace: "nowrap" };
+}
+
+function App() {
+  const [dir, setDir] = useState("up");
+  const [dow, setDow] = useState(() => {
+    const d = new Date().getDay();
+    return d === 0 || d === 6 ? "holiday" : "weekday";
+  });
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setTick(v => v + 1), 30000);
+    return () => clearInterval(t);
+  }, []);
+
+  const upData   = dow === "weekday" ? UP_WEEKDAY   : UP_HOLIDAY;
+  const downData = dow === "weekday" ? DOWN_WEEKDAY : DOWN_HOLIDAY;
+  const upNext   = nextIdx(upData,   r => r.dep);
+  const downNext = nextIdx(downData, r => r.ueno);
+
+  const Btn = ({ active, color, children, onClick }) => (
+    <button onClick={onClick} style={{
+      padding: "7px 14px", fontSize: 12, fontWeight: active ? 700 : 400,
+      cursor: "pointer", background: active ? color : "transparent",
+      color: active ? "#fff" : "#6a94b8", border: "none", letterSpacing: "0.04em",
+      WebkitTapHighlightColor: "transparent",
+    }}>{children}</button>
+  );
+
+  return (
+    <div style={{ fontFamily: sans, background: "#0b0f1a", height: "100dvh", display: "flex", flexDirection: "column", color: "#c8d8e8" }}>
+
+      {/* ヘッダー */}
+      <div style={{
+        background: "linear-gradient(135deg,#0e3a5c,#0a2240)",
+        borderBottom: "3px solid #1e6fa8",
+        padding: "14px 14px 12px",
+        flexShrink: 0,
+      }}>
+        <div style={{ fontSize: 11, letterSpacing: "0.12em", color: "#6a94b8", marginBottom: 2 }}>上野東京ライン直通</div>
+        <div style={{ fontSize: 17, fontWeight: 700, color: "#fff", marginBottom: 10 }}>新町 ⇔ 上野・東京</div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", background: "rgba(255,255,255,0.07)", borderRadius: 8, overflow: "hidden", border: "1px solid rgba(255,255,255,0.12)" }}>
+            <Btn active={dir === "up"} color="#1e5a9c" onClick={() => setDir("up")}>▲ 新町 → 東京</Btn>
+            <Btn active={dir === "down"} color="#1e5a9c" onClick={() => setDir("down")}>▼ 東京 → 新町</Btn>
+          </div>
+          <div style={{ display: "flex", background: "rgba(255,255,255,0.07)", borderRadius: 8, overflow: "hidden", border: "1px solid rgba(255,255,255,0.12)" }}>
+            <Btn active={dow === "weekday"} color="#0e6b44" onClick={() => setDow("weekday")}>平日</Btn>
+            <Btn active={dow === "holiday"} color="#0e6b44" onClick={() => setDow("holiday")}>土休日</Btn>
+          </div>
+        </div>
+      </div>
+
+      {/* テーブル（ここだけスクロール） */}
+      <div style={{ flex: 1, overflowY: "auto", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+        {dir === "up" ? (
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+            <thead>
+              <tr>
+                <th style={thSt()}>新町発</th>
+                <th style={thSt()}>上野着 <span style={{ fontSize: 9, color: "#5a8aaa", fontWeight: 400 }}>参考</span></th>
+                <th style={thSt()}>東京着 <span style={{ fontSize: 9, color: "#5a8aaa", fontWeight: 400 }}>参考</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {upData.map((row, i) => {
+                const past = toMin(row.dep) < nowMin();
+                const next = i === upNext;
+                const uenoArr = addMin(row.dep, travelMin(row.dep));
+                const tokyoArr = row.via === "上野止" ? null : addMin(uenoArr, 6);
+                return (
+                  <tr key={i} style={rowSt(past, next)}>
+                    <td style={timeSt(past, next, false)}>
+                      {next && <span style={{ color: "#ffd84d", marginRight: 4, fontSize: 10 }}>▶</span>}
+                      {row.dep}
+                    </td>
+                    <td style={timeSt(past, next, true)}>{uenoArr}</td>
+                    <td style={timeSt(past, next, true)}>
+                      {tokyoArr || <span style={{ color: past ? "#2d4155" : "#3a5570", fontFamily: mono }}>——</span>}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        ) : (
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+            <thead>
+              <tr>
+                <th style={thSt()}>東京発</th>
+                <th style={thSt()}>上野発</th>
+                <th style={thSt()}>種別</th>
+                <th style={thSt()}>新町着</th>
+              </tr>
+            </thead>
+            <tbody>
+              {downData.map((row, i) => {
+                const past = toMin(row.ueno) < nowMin();
+                const next = i === downNext;
+                return (
+                  <tr key={i} style={rowSt(past, next)}>
+                    <td style={timeSt(past, next, false)}>
+                      {next && !row.origin && <span style={{ color: "#ffd84d", marginRight: 4, fontSize: 10 }}>▶</span>}
+                      {row.origin
+                        ? <span style={{ color: past ? "#2d4155" : "#5aaff0", fontSize: 11, fontFamily: sans }}>上野始発</span>
+                        : row.tokyo}
+                    </td>
+                    <td style={timeSt(past, next, false)}>
+                      {next && row.origin && <span style={{ color: "#ffd84d", marginRight: 4, fontSize: 10 }}>▶</span>}
+                      {row.ueno}
+                    </td>
+                    <td style={tdSt(past)}>
+                      <span style={{
+                        display: "inline-block", padding: "2px 7px", borderRadius: 4, fontSize: 10, fontWeight: 700,
+                        background: row.type === "快速アーバン" ? "#8b3a00" : "rgba(30,80,120,0.5)",
+                        color: row.type === "快速アーバン" ? "#ffa05a" : "#6a94b8",
+                        border: `1px solid ${row.type === "快速アーバン" ? "#a0440a" : "#2a5070"}`,
+                      }}>{row.type}</span>
+                    </td>
+                    <td style={timeSt(past, false, false)}>{row.arr}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* フッター */}
+      <div style={{ fontSize: 10, color: "#3a5570", padding: "8px 14px", flexShrink: 0, borderTop: "1px solid #1a3a55", lineHeight: 1.7 }}>
+        ※ 2026年4月改正　上野東京ライン直通のみ（湘南新宿ライン除く）
+        {dir === "up" ? "　上野着・東京着は推計値（±5分）。「——」は上野止まり" : "　東京発は目安（上野の約6分前）"}
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+  </script>
+</body>
+</html>
