@@ -241,6 +241,14 @@ function travelMin(dep) {
   if (m < 17 * 60) return 100;
   return 97;
 }
+function makeGmapsUrl(timeStr, destination) {
+  if (!timeStr || timeStr.startsWith("翌")) return null;
+  const [h, m] = timeStr.split(":").map(Number);
+  const now = new Date();
+  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
+  const unix = Math.floor(d.getTime() / 1000);
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}&travelmode=transit&arrival_time=${unix}`;
+}
 function nowMin() {
   const d = new Date();
   return d.getHours() * 60 + d.getMinutes();
@@ -354,9 +362,17 @@ function App() {
                       {next && <span style={{ color: "#ffd84d", marginRight: 4, fontSize: 10 }}>▶</span>}
                       {row.dep}
                     </td>
-                    <td style={timeSt(past, next, true)}>{uenoArr}</td>
                     <td style={timeSt(past, next, true)}>
-                      {tokyoArr || <span style={{ color: past ? "#2d4155" : "#3a5570", fontFamily: mono }}>——</span>}
+                      {row.via === "上野止" && makeGmapsUrl(uenoArr, "上野駅")
+                        ? <a href={makeGmapsUrl(uenoArr, "上野駅")} target="_blank" rel="noopener" style={{ color: "inherit", textDecoration: "underline" }}>{uenoArr}</a>
+                        : uenoArr}
+                    </td>
+                    <td style={timeSt(past, next, true)}>
+                      {tokyoArr
+                        ? (makeGmapsUrl(tokyoArr, "東京駅")
+                          ? <a href={makeGmapsUrl(tokyoArr, "東京駅")} target="_blank" rel="noopener" style={{ color: "inherit", textDecoration: "underline" }}>{tokyoArr}</a>
+                          : tokyoArr)
+                        : <span style={{ color: past ? "#2d4155" : "#3a5570", fontFamily: mono }}>——</span>}
                     </td>
                   </tr>
                 );
@@ -397,7 +413,11 @@ function App() {
                         border: `1px solid ${row.type === "快速アーバン" ? "#a0440a" : "#2a5070"}`,
                       }}>{row.type}</span>
                     </td>
-                    <td style={timeSt(past, false, false)}>{row.arr}</td>
+                    <td style={timeSt(past, false, false)}>
+                      {makeGmapsUrl(row.arr, "新町駅 群馬県")
+                        ? <a href={makeGmapsUrl(row.arr, "新町駅 群馬県")} target="_blank" rel="noopener" style={{ color: "inherit", textDecoration: "underline" }}>{row.arr}</a>
+                        : row.arr}
+                    </td>
                   </tr>
                 );
               })}
