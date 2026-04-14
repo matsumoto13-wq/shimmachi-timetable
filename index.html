@@ -241,11 +241,23 @@ function travelMin(dep) {
   if (m < 17 * 60) return 100;
   return 97;
 }
-function openGmaps(timeStr, destination) {
+function openGmaps(timeStr, destination, dayType = "weekday") {
   if (!timeStr || timeStr.startsWith("翌")) return;
   const [h, m] = timeStr.split(":").map(Number);
+
+  // 使用する日付を決定
   const now = new Date();
-  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
+  let targetDate;
+  if (dayType === "holiday") {
+    // 直近の土曜日を求める（今日が土曜なら今日）
+    const day = now.getDay(); // 0=日, 6=土
+    const daysUntilSat = day === 6 ? 0 : (6 - day);
+    targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysUntilSat);
+  } else {
+    targetDate = now;
+  }
+
+  const d = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), h, m, 0);
   const localUnix = Math.floor(d.getTime() / 1000) + (-now.getTimezoneOffset() * 60);
   const dest = encodeURIComponent(destination);
 
@@ -381,13 +393,13 @@ function App() {
                     </td>
                     <td style={timeSt(past, next, true)}>
                       {row.via === "上野止" && uenoArr && !uenoArr.startsWith("翌")
-                        ? <span onClick={() => openGmaps(uenoArr, "上野駅")} style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>{uenoArr}</span>
+                        ? <span onClick={() => openGmaps(uenoArr, "上野駅", dow)} style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>{uenoArr}</span>
                         : uenoArr}
                     </td>
                     <td style={timeSt(past, next, true)}>
                       {tokyoArr
                         ? (tokyoArr && !tokyoArr.startsWith("翌")
-                          ? <span onClick={() => openGmaps(tokyoArr, "東京駅")} style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>{tokyoArr}</span>
+                          ? <span onClick={() => openGmaps(tokyoArr, "東京駅", dow)} style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>{tokyoArr}</span>
                           : tokyoArr)
                         : <span style={{ color: past ? "#2d4155" : "#3a5570", fontFamily: mono }}>——</span>}
                     </td>
@@ -432,7 +444,7 @@ function App() {
                     </td>
                     <td style={timeSt(past, false, false)}>
                       {row.arr && !row.arr.startsWith("翌")
-                        ? <span onClick={() => openGmaps(row.arr, "新町駅 群馬県")} style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>{row.arr}</span>
+                        ? <span onClick={() => openGmaps(row.arr, "新町駅 群馬県", dow)} style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>{row.arr}</span>
                         : row.arr}
                     </td>
                   </tr>
