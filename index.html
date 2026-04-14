@@ -241,13 +241,22 @@ function travelMin(dep) {
   if (m < 17 * 60) return 100;
   return 97;
 }
-function makeGmapsUrl(timeStr, destination) {
+function makeGmapsUrl(timeStr, destination, isArrival = true) {
   if (!timeStr || timeStr.startsWith("翌")) return null;
   const [h, m] = timeStr.split(":").map(Number);
   const now = new Date();
   const d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
-  const unix = Math.floor(d.getTime() / 1000);
-  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}&travelmode=transit&arrival_time=${unix}`;
+  // ローカル時間基準のタイムスタンプ（!7e2 用）
+  const localUnix = Math.floor(d.getTime() / 1000) + (-now.getTimezoneOffset() * 60);
+  const dest = encodeURIComponent(destination);
+
+  if (isArrival) {
+    // 到着時刻指定: !6e1=到着, !7e2=ローカル時間, !8j=タイムスタンプ, !3e3=電車
+    return `https://www.google.com/maps/dir//${dest}/data=!4m6!4m5!2m3!6e1!7e2!8j${localUnix}!3e3`;
+  } else {
+    // 出発時刻指定: !6e0=出発
+    return `https://www.google.com/maps/dir//${dest}/data=!4m6!4m5!2m3!6e0!7e2!8j${localUnix}!3e3`;
+  }
 }
 function nowMin() {
   const d = new Date();
