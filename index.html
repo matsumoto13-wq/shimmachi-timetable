@@ -252,10 +252,10 @@ function makeGmapsUrl(timeStr, destination, isArrival = true) {
 
   if (isArrival) {
     // 到着時刻指定: !6e1=到着, !7e2=ローカル時間, !8j=タイムスタンプ, !3e3=電車
-    return `https://www.google.com/maps/dir//${dest}/data=!4m6!4m5!2m3!6e1!7e2!8j${localUnix}!3e3`;
+    return `https://www.google.com/maps/dir/My+Location/${dest}/data=!4m6!4m5!2m3!6e1!7e2!8j${localUnix}!3e3`;
   } else {
     // 出発時刻指定: !6e0=出発
-    return `https://www.google.com/maps/dir//${dest}/data=!4m6!4m5!2m3!6e0!7e2!8j${localUnix}!3e3`;
+    return `https://www.google.com/maps/dir/My+Location/${dest}/data=!4m6!4m5!2m3!6e0!7e2!8j${localUnix}!3e3`;
   }
 }
 function nowMin() {
