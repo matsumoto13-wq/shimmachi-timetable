@@ -241,21 +241,29 @@ function travelMin(dep) {
   if (m < 17 * 60) return 100;
   return 97;
 }
-function makeGmapsUrl(timeStr, destination, isArrival = true) {
-  if (!timeStr || timeStr.startsWith("翌")) return null;
+function openGmaps(timeStr, destination) {
+  if (!timeStr || timeStr.startsWith("翌")) return;
   const [h, m] = timeStr.split(":").map(Number);
   const now = new Date();
   const d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
-  // ローカル時間基準のタイムスタンプ（!7e2 用）
   const localUnix = Math.floor(d.getTime() / 1000) + (-now.getTimezoneOffset() * 60);
   const dest = encodeURIComponent(destination);
 
-  if (isArrival) {
-    // 到着時刻指定: !6e1=到着, !7e2=ローカル時間, !8j=タイムスタンプ, !3e3=電車
-    return `https://www.google.com/maps/dir/My+Location/${dest}/data=!4m6!4m5!2m3!6e1!7e2!8j${localUnix}!3e3`;
+  function buildUrl(lat, lng) {
+    if (lat != null) {
+      return `https://www.google.com/maps/dir/${lat},${lng}/${dest}/data=!4m6!4m5!2m3!6e1!7e2!8j${localUnix}!3e3`;
+    }
+    return `https://www.google.com/maps/dir/${dest}/data=!4m6!4m5!2m3!6e1!7e2!8j${localUnix}!3e3`;
+  }
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => window.open(buildUrl(pos.coords.latitude, pos.coords.longitude), "_blank"),
+      ()    => window.open(buildUrl(null, null), "_blank"),
+      { timeout: 5000 }
+    );
   } else {
-    // 出発時刻指定: !6e0=出発
-    return `https://www.google.com/maps/dir/My+Location/${dest}/data=!4m6!4m5!2m3!6e0!7e2!8j${localUnix}!3e3`;
+    window.open(buildUrl(null, null), "_blank");
   }
 }
 function nowMin() {
@@ -372,14 +380,14 @@ function App() {
                       {row.dep}
                     </td>
                     <td style={timeSt(past, next, true)}>
-                      {row.via === "上野止" && makeGmapsUrl(uenoArr, "上野駅")
-                        ? <a href={makeGmapsUrl(uenoArr, "上野駅")} target="_blank" rel="noopener" style={{ color: "inherit", textDecoration: "underline" }}>{uenoArr}</a>
+                      {row.via === "上野止" && uenoArr && !uenoArr.startsWith("翌")
+                        ? <span onClick={() => openGmaps(uenoArr, "上野駅")} style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>{uenoArr}</span>
                         : uenoArr}
                     </td>
                     <td style={timeSt(past, next, true)}>
                       {tokyoArr
-                        ? (makeGmapsUrl(tokyoArr, "東京駅")
-                          ? <a href={makeGmapsUrl(tokyoArr, "東京駅")} target="_blank" rel="noopener" style={{ color: "inherit", textDecoration: "underline" }}>{tokyoArr}</a>
+                        ? (tokyoArr && !tokyoArr.startsWith("翌")
+                          ? <span onClick={() => openGmaps(tokyoArr, "東京駅")} style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>{tokyoArr}</span>
                           : tokyoArr)
                         : <span style={{ color: past ? "#2d4155" : "#3a5570", fontFamily: mono }}>——</span>}
                     </td>
@@ -423,8 +431,8 @@ function App() {
                       }}>{row.type}</span>
                     </td>
                     <td style={timeSt(past, false, false)}>
-                      {makeGmapsUrl(row.arr, "新町駅 群馬県")
-                        ? <a href={makeGmapsUrl(row.arr, "新町駅 群馬県")} target="_blank" rel="noopener" style={{ color: "inherit", textDecoration: "underline" }}>{row.arr}</a>
+                      {row.arr && !row.arr.startsWith("翌")
+                        ? <span onClick={() => openGmaps(row.arr, "新町駅 群馬県")} style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>{row.arr}</span>
                         : row.arr}
                     </td>
                   </tr>
