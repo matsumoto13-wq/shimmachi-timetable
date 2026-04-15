@@ -243,26 +243,21 @@ function travelMin(dep) {
 }
 function openGmaps(timeStr, destination, dayType = "weekday") {
   if (!timeStr) return;
+
   const isNextDay = timeStr.startsWith("翌");
   const cleanTime = isNextDay ? timeStr.slice(1) : timeStr;
   const [h, m] = cleanTime.split(":").map(Number);
 
-  // 使用する日付を決定
   const now = new Date();
   let targetDate;
   if (dayType === "holiday") {
-    // 直近の土曜日を求める（今日が土曜なら今日）
-    const day = now.getDay(); // 0=日, 6=土
+    const day = now.getDay();
     const daysUntilSat = day === 6 ? 0 : (6 - day);
     targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysUntilSat);
   } else {
-    targetDate = now;
+    targetDate = new Date(now);
   }
-
-  // 翌日なら+1日
-  if (isNextDay) {
-    targetDate.setDate(targetDate.getDate() + 1);
-  }
+  if (isNextDay) targetDate.setDate(targetDate.getDate() + 1);
 
   const d = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), h, m, 0);
   const localUnix = Math.floor(d.getTime() / 1000) + (-now.getTimezoneOffset() * 60);
@@ -275,14 +270,17 @@ function openGmaps(timeStr, destination, dayType = "weekday") {
     return `https://www.google.com/maps/dir/${dest}/data=!4m6!4m5!2m3!6e1!7e2!8j${localUnix}!3e3`;
   }
 
+  // Safariブロック対策：クリック直後にタブを開き、後からURLをセット
+  const newTab = window.open("", "_blank");
+
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
-      (pos) => window.open(buildUrl(pos.coords.latitude, pos.coords.longitude), "_blank"),
-      ()    => window.open(buildUrl(null, null), "_blank"),
+      (pos) => { newTab.location.href = buildUrl(pos.coords.latitude, pos.coords.longitude); },
+      ()    => { newTab.location.href = buildUrl(null, null); },
       { timeout: 5000 }
     );
   } else {
-    window.open(buildUrl(null, null), "_blank");
+    newTab.location.href = buildUrl(null, null);
   }
 }
 function nowMin() {
