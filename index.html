@@ -263,25 +263,9 @@ function openGmaps(timeStr, destination, dayType = "weekday") {
   const localUnix = Math.floor(d.getTime() / 1000) + (-now.getTimezoneOffset() * 60);
   const dest = encodeURIComponent(destination);
 
-  function buildUrl(lat, lng) {
-    if (lat != null) {
-      return `https://www.google.com/maps/dir/${lat},${lng}/${dest}/data=!4m6!4m5!2m3!6e1!7e2!8j${localUnix}!3e3`;
-    }
-    return `https://www.google.com/maps/dir/${dest}/data=!4m6!4m5!2m3!6e1!7e2!8j${localUnix}!3e3`;
-  }
-
-  // Safariブロック対策：クリック直後にタブを開き、後からURLをセット
-  const newTab = window.open("", "_blank");
-
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => { newTab.location.href = buildUrl(pos.coords.latitude, pos.coords.longitude); },
-      ()    => { newTab.location.href = buildUrl(null, null); },
-      { timeout: 5000 }
-    );
-  } else {
-    newTab.location.href = buildUrl(null, null);
-  }
+  // originを空にする（//）→ Googleマップが現在地を自動使用、Geolocation不要
+  const url = `https://www.google.com/maps/dir//${dest}/data=!4m6!4m5!2m3!6e1!7e2!8j${localUnix}!3e3`;
+  window.open(url, "_blank");
 }
 function nowMin() {
   const d = new Date();
