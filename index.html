@@ -266,7 +266,7 @@ function openGmaps(timeStr, destination, dayType = "weekday", coords = null) {
   const dest = encodeURIComponent(destination);
 
   console.log("userCoords:", coords);
-  const origin = coords ? `${coords.lat},${coords.lng}` : "";
+  const origin = typeof coords === "string" ? encodeURIComponent(coords) : coords ? `${coords.lat},${coords.lng}` : "";
   const url = `https://www.google.com/maps/dir/${origin}/${dest}/data=!4m6!4m5!2m3!6e1!7e2!8j${localUnix}!3e3`;
   console.log("url:", url);
   window.open(url, "_blank");
@@ -399,12 +399,12 @@ function App() {
                     </td>
                     <td style={timeSt(past, next, true)}>
                       {uenoArr
-                        ? <span onClick={() => openGmaps(uenoArr, "上野駅", dow, userCoords)} style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>{uenoArr}</span>
+                        ? <span onClick={() => openGmaps(uenoArr, "上野駅", dow, "新町駅 群馬県")} style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>{uenoArr}</span>
                         : uenoArr}
                     </td>
                     <td style={timeSt(past, next, true)}>
                       {tokyoArr
-                        ? <span onClick={() => openGmaps(tokyoArr, "東京駅", dow, userCoords)} style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>{tokyoArr}</span>
+                        ? <span onClick={() => openGmaps(tokyoArr, "東京駅", dow, "新町駅 群馬県")} style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>{tokyoArr}</span>
                         : <span style={{ color: past ? "#2d4155" : "#3a5570", fontFamily: mono }}>——</span>}
                     </td>
                   </tr>
