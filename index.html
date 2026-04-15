@@ -241,7 +241,7 @@ function travelMin(dep) {
   if (m < 17 * 60) return 100;
   return 97;
 }
-function openGmaps(timeStr, destination, dayType = "weekday") {
+function openGmaps(timeStr, destination, dayType = "weekday", coords = null) {
   if (!timeStr) return;
 
   const isNextDay = timeStr.startsWith("翌");
@@ -263,8 +263,8 @@ function openGmaps(timeStr, destination, dayType = "weekday") {
   const localUnix = Math.floor(d.getTime() / 1000) + (-now.getTimezoneOffset() * 60);
   const dest = encodeURIComponent(destination);
 
-  // originを空にする（//）→ Googleマップが現在地を自動使用、Geolocation不要
-  const url = `https://www.google.com/maps/dir//${dest}/data=!4m6!4m5!2m3!6e1!7e2!8j${localUnix}!3e3`;
+  const origin = coords ? `${coords.lat},${coords.lng}` : "";
+  const url = `https://www.google.com/maps/dir/${origin}/${dest}/data=!4m6!4m5!2m3!6e1!7e2!8j${localUnix}!3e3`;
   window.open(url, "_blank");
 }
 function nowMin() {
@@ -313,10 +313,21 @@ function App() {
     return d === 0 || d === 6 ? "holiday" : "weekday";
   });
   const [, setTick] = useState(0);
+  const [userCoords, setUserCoords] = useState(null);
 
   useEffect(() => {
     const t = setInterval(() => setTick(v => v + 1), 30000);
     return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => setUserCoords(null),
+        { timeout: 10000 }
+      );
+    }
   }, []);
 
   const upData   = dow === "weekday" ? UP_WEEKDAY   : UP_HOLIDAY;
@@ -382,12 +393,12 @@ function App() {
                     </td>
                     <td style={timeSt(past, next, true)}>
                       {row.via === "上野止" && uenoArr
-                        ? <span onClick={() => openGmaps(uenoArr, "上野駅", dow)} style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>{uenoArr}</span>
+                        ? <span onClick={() => openGmaps(uenoArr, "上野駅", dow, userCoords)} style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>{uenoArr}</span>
                         : uenoArr}
                     </td>
                     <td style={timeSt(past, next, true)}>
                       {tokyoArr
-                        ? <span onClick={() => openGmaps(tokyoArr, "東京駅", dow)} style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>{tokyoArr}</span>
+                        ? <span onClick={() => openGmaps(tokyoArr, "東京駅", dow, userCoords)} style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>{tokyoArr}</span>
                         : <span style={{ color: past ? "#2d4155" : "#3a5570", fontFamily: mono }}>——</span>}
                     </td>
                   </tr>
@@ -431,7 +442,7 @@ function App() {
                     </td>
                     <td style={timeSt(past, false, false)}>
                       {row.arr
-                        ? <span onClick={() => openGmaps(row.arr, "新町駅 群馬県", dow)} style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>{row.arr}</span>
+                        ? <span onClick={() => openGmaps(row.arr, "新町駅 群馬県", dow, userCoords)} style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>{row.arr}</span>
                         : row.arr}
                     </td>
                   </tr>
