@@ -263,8 +263,10 @@ function openGmaps(timeStr, destination, dayType = "weekday", coords = null) {
   const localUnix = Math.floor(d.getTime() / 1000) + (-now.getTimezoneOffset() * 60);
   const dest = encodeURIComponent(destination);
 
+  console.log("userCoords:", coords);
   const origin = coords ? `${coords.lat},${coords.lng}` : "";
   const url = `https://www.google.com/maps/dir/${origin}/${dest}/data=!4m6!4m5!2m3!6e1!7e2!8j${localUnix}!3e3`;
+  console.log("url:", url);
   window.open(url, "_blank");
 }
 function nowMin() {
@@ -323,8 +325,8 @@ function App() {
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => setUserCoords(null),
+        (pos) => { console.log("coords取得成功", pos.coords); setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }); },
+        (err) => { console.log("coords取得失敗", err); setUserCoords(null); },
         { timeout: 10000 }
       );
     }
