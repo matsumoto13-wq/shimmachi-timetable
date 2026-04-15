@@ -7,6 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="新町時刻表" />
   <meta name="theme-color" content="#0a2240" />
+  <link rel="icon" href="data:," />
   <title>新町 ⇔ 上野・東京 時刻表</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -323,10 +324,11 @@ function App() {
   }, []);
 
   useEffect(() => {
+    console.log("useEffect実行: geolocation対応=", !!navigator.geolocation);
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => { console.log("coords取得成功", pos.coords); setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }); },
-        (err) => { console.log("coords取得失敗", err); setUserCoords(null); },
+        (pos) => { console.log("coords取得成功", pos.coords.latitude, pos.coords.longitude); setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }); },
+        (err) => { console.log("coords取得失敗", err.code, err.message); setUserCoords(null); },
         { timeout: 10000 }
       );
     }
