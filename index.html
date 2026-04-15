@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-title" content="新町時刻表" />
   <meta name="theme-color" content="#0a2240" />
   <link rel="icon" href="data:," />
-  <title>新町 ⇔ 上野・東京 時刻表</title>
+  <title>My時刻表（上野東京ライン）</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #0b0f1a; }
@@ -350,8 +350,7 @@ function App() {
         padding: "14px 14px 12px",
         flexShrink: 0,
       }}>
-        <div style={{ fontSize: 11, letterSpacing: "0.12em", color: "#6a94b8", marginBottom: 2 }}>上野東京ライン直通</div>
-        <div style={{ fontSize: 17, fontWeight: 700, color: "#fff", marginBottom: 10 }}>新町 ⇔ 上野・東京</div>
+        <div style={{ fontSize: 17, fontWeight: 700, color: "#fff", marginBottom: 10 }}>My時刻表（上野東京ライン）</div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <div style={{ display: "flex", background: "rgba(255,255,255,0.07)", borderRadius: 8, overflow: "hidden", border: "1px solid rgba(255,255,255,0.12)" }}>
             <Btn active={dir === "up"} color="#1e5a9c" onClick={() => setDir("up")}>▲ 新町 → 東京</Btn>
