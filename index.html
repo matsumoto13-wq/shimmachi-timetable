@@ -398,7 +398,7 @@ function App() {
                       {row.dep}
                     </td>
                     <td style={timeSt(past, next, true)}>
-                      {row.via === "上野止" && uenoArr
+                      {uenoArr
                         ? <span onClick={() => openGmaps(uenoArr, "上野駅", dow, userCoords)} style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>{uenoArr}</span>
                         : uenoArr}
                     </td>
@@ -446,7 +446,7 @@ function App() {
                         border: `1px solid ${row.type === "快速アーバン" ? "#a0440a" : "#2a5070"}`,
                       }}>{row.type}</span>
                     </td>
-                    <td style={timeSt(past, false, false)}>
+                    <td style={timeSt(past, next, false)}>
                       {row.arr
                         ? <span onClick={() => openGmaps(row.arr, "新町駅 群馬県", dow, userCoords)} style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>{row.arr}</span>
                         : row.arr}
