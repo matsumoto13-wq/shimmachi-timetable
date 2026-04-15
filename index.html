@@ -25,7 +25,7 @@
 
   <script>console.log("=== shimmachi v2 loaded ===");</script>
   <script type="text/babel">
-const { useState, useEffect } = React;
+const { useState, useEffect, useRef } = React;
 
 const UP_WEEKDAY = [
   { dep: "05:20", ueno: "06:53", tokyo: "06:59", via: "東京経由" },
@@ -321,6 +321,11 @@ function App() {
     }
   }, []);
 
+  const nextRowRef = useRef(null);
+  useEffect(() => {
+    nextRowRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [dir, dow]);
+
   const upData   = dow === "weekday" ? UP_WEEKDAY   : UP_HOLIDAY;
   const downData = dow === "weekday" ? DOWN_WEEKDAY : DOWN_HOLIDAY;
   const upNext   = nextIdx(upData,   r => r.dep);
@@ -375,7 +380,7 @@ function App() {
                 const past = toMin(row.dep) < nowMin();
                 const next = i === upNext;
                 return (
-                  <tr key={i} style={rowSt(past, next)}>
+                  <tr key={i} ref={next ? nextRowRef : null} style={rowSt(past, next)}>
                     <td style={timeSt(past, next, false)}>
                       {next && <span style={{ color: "#ffd84d", marginRight: 4, fontSize: 10 }}>▶</span>}
                       {row.dep}
@@ -410,7 +415,7 @@ function App() {
                 const past = toMin(row.ueno) < nowMin();
                 const next = i === downNext;
                 return (
-                  <tr key={i} style={rowSt(past, next)}>
+                  <tr key={i} ref={next ? nextRowRef : null} style={rowSt(past, next)}>
                     <td style={timeSt(past, next, false)}>
                       {next && !row.origin && <span style={{ color: "#ffd84d", marginRight: 4, fontSize: 10 }}>▶</span>}
                       {row.origin
